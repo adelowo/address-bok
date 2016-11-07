@@ -27,7 +27,13 @@ function parseRouteInformation(array $matchedRoute)
 
     $session = startSession();
 
-    $session->put("_token", makeCsrfToken());
+    //Only update the csrf token on a HTTP request other than POST.
+    //This is so, as we can easily compare.
+    //If it isn't done like this, we inherently overwrite the token used to serve the request (since this is a fresh request and the token is "re-cooked" on every request initialization).
+    //Hence an Exception would always be thrown
+    if ("POST" !== $_SERVER['REQUEST_METHOD']) {
+        $session->put("_token", makeCsrfToken());
+    }
 
     return call_user_func_array(
         $matchedRoute['handler'],
@@ -60,8 +66,8 @@ function getAbsoluteUriForRoute(string $route)
     $host = $_SERVER['HTTP_HOST'];
     $uri = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
 
-    $uri = ($uri) ?  $uri : '';
-    $route = ($route) ? $route: '';
+    $uri = ($uri) ? $uri : '';
+    $route = ($route) ? $route : '';
 
     return "http://{$host}{$uri}/{$route}";
 }
@@ -72,13 +78,12 @@ function getAbsoluteUriForRoute(string $route)
  */
 function preEnterPostedRoute()
 {
-    if (getCsrfToken()) {
+    if (strcmp(getCsrfToken(), $_POST['_token']) === 0) {
         return;
     }
 
-    //code shouldn't get here anyways but if it does, session got tampered with, which is a bad thing anyways
-    throw new Exception(
-        "Something def went wrong here"
+    throwCsrfException(
+        \SeedStars\Exception\CsrfException::CSRF_TOKEN_NOT_PRESENT
     );
 }
 
