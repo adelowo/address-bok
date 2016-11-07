@@ -7,6 +7,18 @@ require_once "vendor/autoload.php";
 define("LOGGED_IN_USER", "user");
 define("APP_NAME", "Seedstars");
 
+
+function index(\SeedStars\Session $session, string $httpVerb = "GET")
+{
+    if ("GET" !== $httpVerb) {
+        throwInvalidRequestException($httpVerb);
+    }
+
+    preAuthContentAccess();
+
+    return makeView("index");
+}
+
 function deleteEntryFromAddressBook(\SeedStars\Session $session, string $httpVerb = "POST")
 {
     if ("POST" !== $httpVerb) {
@@ -269,7 +281,7 @@ $routes = [
     ],
     "/" => [
         "verb" => "GET",
-        "handler" => 'listAllEntries'
+        "handler" => 'index'
     ]
 ];
 
