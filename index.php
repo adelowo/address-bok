@@ -52,17 +52,30 @@ function addNewEntryToAddressBook(\SeedStars\Session $session, string $httpVerb 
         if (0 !== $errorBagHolder->count()) {
 
             $session->put("errors", $errorBagHolder->getAll());
-            $to = getAbsoluteUriForRoute("create");
+            $to = getAbsoluteUriForRoute("add");
             header("Location: {$to}");
             exit();
         }
 
         $pdo = getPDO();
+
+        $checkDuplicateEmail = $pdo->prepare("SELECT email FROM address_book WHERE email = :email");
+        $checkDuplicateEmail->bindParam(":email", sanitize($_POST['mail'], "email"));
+
+        if (0 !== $checkDuplicateEmail->rowCount()) {
+
+            $session->put("duplicated", ["status" => true, "value" => strip_tags(sanitize($_POST['mail']))]);
+
+            $to = getAbsoluteUriForRoute("add");
+            header("Location: {$to}");
+            exit();
+        }
+
         $statement = $pdo->prepare("INSERT INTO address_book(fullname, email) VALUES (:fullname, :email)");
         $statement->bindValue(":fullname", sanitize($_POST['fullname']));
         $statement->bindValue(":email", sanitize($_POST['mail'], "email"));
 
-        $to = getAbsoluteUriForRoute("create");
+        $to = getAbsoluteUriForRoute("add");
 
         if ($statement->execute()) {
             $session->put("success", true);
@@ -91,7 +104,7 @@ function logUserIntoApplication(\SeedStars\Session $session, string $httpVerb)
         );
     }
 
-    if($session->has(LOGGED_IN_USER)) {
+    if ($session->has(LOGGED_IN_USER)) {
         $to = getAbsoluteUriForRoute("/");
         header("Location: {$to}");
         exit();
@@ -206,7 +219,7 @@ $routes = [
         "verb" => "GET",
         "handler" => 'logOut'
     ],
-    "/create" => [
+    "/add" => [
         "verb" => "GET|POST",
         "handler" => 'addNewEntryToAddressBook'
     ],

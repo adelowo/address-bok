@@ -5,6 +5,11 @@ require_once 'base.template.php';
 $addedNewContact = session("success");
 $error = session("errors");
 $classicErrors = session("classic_error");
+$duplicate = session("duplicated");
+
+$session = \SeedStars\Session::getInstance();
+$session->remove("success");
+$session->remove("duplicated");
 
 clearErrorsFromSession();
 ?>
@@ -32,6 +37,14 @@ clearErrorsFromSession();
                         echo '<div class="alert alert-danger">
                         	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
                         	<strong>Whoops</strong> Something went wrong and we are sorry. Please try again
+                        </div>';
+                    }
+
+                    if ($duplicate) {
+                        echo '<div class="alert alert-warning">
+                        	<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                        	<strong>Duplicated data</strong> 
+                        	This value ('.$duplicate['value'].') already exists in your address book
                         </div>';
                     }
                     ?>
