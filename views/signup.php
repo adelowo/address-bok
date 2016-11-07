@@ -13,8 +13,7 @@ $userNameErrors = $allErrors['username'];
 $passwordErrors = $allErrors['password'];
 
 //then clear them out the session
-$session->remove("errors");
-
+clearErrorsFromSession();
 ?>
 
     <div class="container">

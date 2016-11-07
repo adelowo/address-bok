@@ -60,8 +60,8 @@ function getAbsoluteUriForRoute(string $route)
     $host = $_SERVER['HTTP_HOST'];
     $uri = rtrim(dirname($_SERVER['PHP_SELF']), '/\\');
 
-    $uri = ($uri) ? '' : $uri;
-    $route = ($route) ? '' : $route;
+    $uri = ($uri) ?  $uri : '';
+    $route = ($route) ? $route: '';
 
     return "http://{$host}{$uri}/{$route}";
 }
@@ -88,7 +88,7 @@ function preEnterPostedRoute()
 function preAuthContentAccess()
 {
     if (!session(LOGGED_IN_USER)) {
-        $to = getAbsoluteUriForRoute("/");
+        $to = getAbsoluteUriForRoute("login");
         header("Location: {$to}");
         exit();
     }
