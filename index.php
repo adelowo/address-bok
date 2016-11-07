@@ -36,7 +36,51 @@ function addNewEntryToAddressBook(\SeedStars\Session $session, string $httpVerb 
         return makeView("create");
     }
 
+    preEnterPostedRoute();
 
+    try {
+
+        $rules = [
+            "fullname:length=>3|50",
+            "mail:email"
+        ];
+
+        $errorBagHolder = errorBagHolder();
+
+        validator($rules, $errorBagHolder);
+
+        if (0 !== $errorBagHolder->count()) {
+
+            $session->put("errors", $errorBagHolder->getAll());
+            $to = getAbsoluteUriForRoute("create");
+            header("Location: {$to}");
+            exit();
+        }
+
+        $pdo = getPDO();
+        $statement = $pdo->prepare("INSERT INTO address_book(fullname, email) VALUES (:fullname, :email)");
+        $statement->bindValue(":fullname", sanitize($_POST['fullname']));
+        $statement->bindValue(":email", sanitize($_POST['mail'], "email"));
+
+        $to = getAbsoluteUriForRoute("create");
+
+        if ($statement->execute()) {
+            $session->put("success", true);
+            header("Location: {$to}");
+            exit();
+        }
+
+        $session->put("classic_error", "Something went wrong");
+
+        header("Location: {$to}");
+        exit();
+
+
+    } catch (Throwable $e) {
+
+        echo $e->getMessage();
+        var_dump($e->getTrace());
+    }
 }
 
 function logUserIntoApplication(\SeedStars\Session $session, string $httpVerb)
@@ -47,7 +91,11 @@ function logUserIntoApplication(\SeedStars\Session $session, string $httpVerb)
         );
     }
 
-    preAuthContentAccess();
+    if($session->has(LOGGED_IN_USER)) {
+        $to = getAbsoluteUriForRoute("/");
+        header("Location: {$to}");
+        exit();
+    }
 
     if ("GET" === $httpVerb) {
         return makeView("login");
