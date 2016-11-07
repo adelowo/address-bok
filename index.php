@@ -110,6 +110,8 @@ function addNewEntryToAddressBook(\SeedStars\Session $session, string $httpVerb 
         $checkDuplicateEmail = $pdo->prepare("SELECT email FROM address_book WHERE email = :email");
         $checkDuplicateEmail->bindParam(":email", sanitize($_POST['mail'], "email"));
 
+        $checkDuplicateEmail->execute();
+
         if (0 !== $checkDuplicateEmail->rowCount()) {
 
             $session->put("duplicated", ["status" => true, "value" => strip_tags(sanitize($_POST['mail']))]);
@@ -144,12 +146,10 @@ function addNewEntryToAddressBook(\SeedStars\Session $session, string $httpVerb 
     }
 }
 
-function logUserIntoApplication(\SeedStars\Session $session, string $httpVerb)
+function logUserIntoApplication(\SeedStars\Session $session, string $httpVerb = "GET")
 {
     if (!in_array($httpVerb, ["GET", "POST"])) {
-        throwInvalidRequestException(
-            \SeedStars\Exception\InvalidHttpVerbException::UNSUPPORTED_HTTP_REQUEST_METHOD
-        );
+        throwInvalidRequestException($httpVerb);
     }
 
     if ($session->has(LOGGED_IN_USER)) {
@@ -162,11 +162,55 @@ function logUserIntoApplication(\SeedStars\Session $session, string $httpVerb)
         return makeView("login");
     }
 
+    preEnterPostedRoute();
+
+    try {
+
+        $pdo = getPDO();
+
+        $statement = $pdo->prepare(
+            "SELECT username,email_adress, password FROM users WHERE username = :username"
+        );
+
+        $to = getAbsoluteUriForRoute("login");
+
+        $errorBagHolder = errorBagHolder();
+
+        validator([
+            "username:length=>3|null"
+        ], $errorBagHolder);
+
+        if (0 !== $errorBagHolder->count()) {
+            $session->put("errors", $errorBagHolder->getAll());
+            header("Location: {$to}");
+            exit();
+        }
+
+        $statement->bindParam(":username", sanitize($_POST['username']));
+        $statement->execute();
+
+        if ($data = $statement->fetch()) {
+            if (validateCredentials($_POST['password'], $data['password'])) {
+                $session->regenerate();
+                $session->put(LOGGED_IN_USER, true);
+                header("Location: /");
+                exit();
+            }
+            return failedLoginResponse($session, $to);
+        }
+
+        return failedLoginResponse($session, $to);
+
+    } catch (Throwable $e) {
+        echo $e->getMessage();
+
+        var_dump($e->getTrace());
+    }
 }
 
-function validateCredentials()
+function validateCredentials(string $providedPassword, string $hashedPassword)
 {
-
+    return password_verify($providedPassword, $hashedPassword);
 }
 
 function logOut(\SeedStars\Session $session, string $httpVerb = "GET")
