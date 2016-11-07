@@ -8,7 +8,7 @@ function getCsrfToken()
         return $session->get("_token");
     }
 
-    return throwCsrfException(\SeedStars\Exception\CsrfException::CSRF_TOKEN_NOT_PRESENT);
+    throwCsrfException(\SeedStars\Exception\CsrfException::CSRF_TOKEN_NOT_PRESENT);
 }
 
 function makeCsrfFormField()
@@ -267,4 +267,11 @@ function sanitizeEmail(string $email)
 function clearErrorsFromSession()
 {
     return \SeedStars\Session::getInstance()->remove("errors");
+}
+
+function failedLoginResponse(\SeedStars\Session $session, string $location)
+{
+    $session->put("failed", true);
+    header("Location: {$location}");
+    exit();
 }
