@@ -7,19 +7,55 @@ require_once "vendor/autoload.php";
 define("LOGGED_IN_USER", "user");
 define("APP_NAME", "Seedstars");
 
+function deleteEntryFromAddressBook(\SeedStars\Session $session, string $httpVerb = "POST")
+{
+    if ("POST" !== $httpVerb) {
+        throwInvalidRequestException($httpVerb);
+    }
+
+    preAuthContentAccess();
+
+    preEnterPostedRoute();
+
+    try {
+
+        $pdo = getPDO();
+
+        $statement = $pdo->prepare("DELETE FROM address_book WHERE id = :identifier");
+        $statement->bindValue(":identifier", sanitize((string)$_POST['index']));
+
+        $to = getAbsoluteUriForRoute("list");
+
+        if ($statement->execute()) {
+            $session->put("success", true);
+            header("Location: {$to}");
+            exit();
+        }
+
+        $session->put("classic_error", true);
+        header("Location: {$to}");
+        exit();
+
+    } catch (Throwable $e) {
+
+        echo $e->getMessage();
+        var_dump($e->getTrace());
+    }
+}
+
 function listAllEntries(\SeedStars\Session $session, string $httpVerb = "GET")
 {
     if ("GET" !== $httpVerb) {
         throwInvalidRequestException($httpVerb);
     }
 
-    if (!$session->has(LOGGED_IN_USER)) {
-        $to = getAbsoluteUriForRoute("login");
-        header("Location: {$to}");
-        exit();
-    }
+    preAuthContentAccess();
 
-    return makeView("index");
+    $contacts = getPDO()->query("SELECT * FROM address_book")->fetchAll();
+
+    $session->put("contacts", $contacts); //would be removed immediately the view is rendered
+
+    return makeView("list");
 }
 
 function addNewEntryToAddressBook(\SeedStars\Session $session, string $httpVerb = "GET")
@@ -223,7 +259,11 @@ $routes = [
         "verb" => "GET|POST",
         "handler" => 'addNewEntryToAddressBook'
     ],
-    "delete" => [
+    "/list" => [
+        "verb" => "GET",
+        "handler" => "listAllEntries"
+    ],
+    "/delete" => [
         "verb" => "POST",
         "handler" => "deleteEntryFromAddressBook"
     ],
