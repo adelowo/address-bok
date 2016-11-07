@@ -14,10 +14,10 @@
 <header>
 
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-        <a class="navbar-brand" href="#"><?= APP_NAME ?></a>
+        <a class="navbar-brand" href="/"><?= APP_NAME ?></a>
         <ul class="nav navbar-nav">
             <li>
-                <a href="#">Home</a>
+                <a href="/">Home</a>
             </li>
             <li>
                 <?php
@@ -31,7 +31,8 @@
                     }
 
                 } else {
-                    $link = "<a href='/create'>Add New</a>";
+                    $link = "<a href='/add'>Add New</a>";
+                    $link .= "<li><a href='/list'> Contacts </a></li>";
                 }
                 echo $link;
                 ?>

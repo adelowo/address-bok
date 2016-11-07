@@ -69,9 +69,9 @@ $session->remove("contacts");
 
                                     echo "<td>{$serialNumber}</td>";
 
-                                    echo "<td>{$contact['fullname']}</td>";
+                                    echo "<td>".strip_tags($contact['fullname'])."</td>";
 
-                                    echo "<td>{$contact['email']}</td>";
+                                    echo "<td>".strip_tags($contact['email'])."</td>";
 
                                     echo "
 <td>
