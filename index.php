@@ -169,9 +169,14 @@ function validateCredentials()
 
 }
 
-function logOut()
+function logOut(\SeedStars\Session $session, string $httpVerb = "GET")
 {
+    //GET OR POST, we'd log you out.
 
+    $session->destroy();
+    $to = getAbsoluteUriForRoute("login");
+    header("Location: {$to}");
+    exit();
 }
 
 function registerUser(\SeedStars\Session $session, string $httpVerb)
@@ -220,8 +225,6 @@ function registerUser(\SeedStars\Session $session, string $httpVerb)
         }
 
 
-//        $sqliteHandler = getSqlite();
-
         $pdo = getPDO();
 
         $statement = $pdo->prepare(
@@ -234,7 +237,7 @@ function registerUser(\SeedStars\Session $session, string $httpVerb)
         $statement->bindParam(":password", password_hash(sanitize($_POST['password']), PASSWORD_DEFAULT));
 
         if ($statement->execute()) {
-
+            $session->regenerate();
             $session->put(LOGGED_IN_USER, true);
 
             $to = getAbsoluteUriForRoute("/");
