@@ -1,0 +1,22 @@
+{
+  "name": "adelowo/address-book",
+  "description": "Seedstar address book implementation",
+  "type": "project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Lanre Adelowo",
+      "email": "adelowomailbox@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "SeedStars\\" : "src"
+    },
+    "files": [
+      "router.php",
+      "view.php",
+      "functions.php"
+    ]
+  }
+}

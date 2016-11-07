@@ -33,6 +33,7 @@
                 } else {
                     $link = "<a href='/add'>Add New</a>";
                     $link .= "<li><a href='/list'> Contacts </a></li>";
+                    $link .= "<li><a href='/logout'> Logout </a></li>";
                 }
                 echo $link;
                 ?>
