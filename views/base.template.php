@@ -24,7 +24,7 @@
                 $link = '';
                 if (!session(LOGGED_IN_USER)) {
 
-                    if ("signup" === $_SERVER['REQUEST_URI']) {
+                    if ("/signup" !== $_SERVER['REQUEST_URI']) {
                         $link = "<a href='/signup'>Register</a>";
                     } else {
                         $link = "<a href='/login'>Login</a>";

@@ -12,6 +12,9 @@ $emailErrors = $allErrors['mail'];
 $userNameErrors = $allErrors['username'];
 $passwordErrors = $allErrors['password'];
 
+$isDuplicate = $session->get("duplicate");
+$session->remove("duplicate");
+
 //then clear them out the session
 clearErrorsFromSession();
 ?>
@@ -30,6 +33,10 @@ clearErrorsFromSession();
                         <?php
                         if ($session->has("classic_error")) {
                             echo "<span class='error'>{$session->get('classic_error')}</span>";
+                        }
+
+                        if($isDuplicate){
+                            echo "<span class='error'>There can only be one</span> <br/> <span class='help-block'>One user per installation</span>";
                         }
                         ?>
 

@@ -275,3 +275,14 @@ function failedLoginResponse(\SeedStars\Session $session, string $location)
     header("Location: {$location}");
     exit();
 }
+
+function isAddressBookOwnedAlready()
+{
+    $pdo = getPDO();
+
+    $statement = $pdo->prepare("SELECT * FROM users");
+
+    $statement->execute();
+
+    return (count($statement->fetchAll()) !== 0) ? true : false ;
+}

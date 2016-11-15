@@ -271,6 +271,13 @@ function registerUser(\SeedStars\Session $session, string $httpVerb)
 
         $pdo = getPDO();
 
+        if (isAddressBookOwnedAlready()) {
+            $session->put("duplicate", true);
+            $to = getAbsoluteUriForRoute("signup");
+            header("Location: {$to}");
+            exit();
+        }
+
         $statement = $pdo->prepare(
             "INSERT INTO users(fullname, username, email_adress, password) VALUES (:fullname, :username, :email, :password)"
         );
